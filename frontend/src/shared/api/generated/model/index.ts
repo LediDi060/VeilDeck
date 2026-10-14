@@ -5,4 +5,15 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './catalogPage';
+export * from './dealType';
 export * from './healthResponse';
+export * from './hTTPValidationError';
+export * from './industry';
+export * from './listCatalogCardsParams';
+export * from './regionMacro';
+export * from './revenueBand';
+export * from './sizeBand';
+export * from './teaserCard';
+export * from './validationError';
+export * from './validationErrorCtx';

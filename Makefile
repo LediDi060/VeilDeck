@@ -1,4 +1,4 @@
-.PHONY: secrets certs certs-ip basic-auth deploy up down seed retention-run
+.PHONY: secrets certs certs-ip basic-auth deploy up down migrate seed retention-run
 
 SECRETS_FILE := .env
 
@@ -50,8 +50,12 @@ up: certs
 down:
 	docker compose -f deploy/docker-compose.yml --env-file .env down
 
-seed:
-	@echo "TODO: задача 4.4"
+migrate:
+	docker compose -f deploy/docker-compose.yml --env-file .env run --rm db-init
+
+# Только синтетические карточки; PDF и staff-аккаунты — оставшаяся часть задачи 4.4.
+seed: migrate
+	docker compose -f deploy/docker-compose.yml --env-file .env run --rm db-init python -m scripts.seed_catalog
 
 retention-run:
 	@echo "TODO: задача 8.2 (NOW_OFFSET=$(NOW_OFFSET))"

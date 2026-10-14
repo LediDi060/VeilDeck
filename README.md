@@ -8,7 +8,10 @@
 
 ## Статус
 
-Спецификация готова (`openspec/`, проходит `openspec validate --strict`), реализация не начата. План — `openspec/changes/add-controlled-disclosure-mvp/tasks.md`. Сдача — начало ноября 2026, защита — начало декабря 2026.
+Реализован первый срез PostgreSQL + публичный REST-каталог: миграции, две таблицы, безопасная teaser-проекция,
+лимитер и синтетические карточки. Запуск и примеры запросов — [docs/database-rest.md](docs/database-rest.md).
+Остальные возможности ниже описывают целевой MVP. План — `openspec/changes/add-controlled-disclosure-mvp/tasks.md`.
+Сдача — начало ноября 2026, защита — начало декабря 2026.
 
 ## Роли
 
@@ -71,10 +74,10 @@ CLAUDE.md   подключает AGENTS.md
 
 ## Запуск
 
-Появится после задачи 11.1 (цель — запуск через Docker Compose за ≤ 30 минут):
+Первый срез БД и REST-каталога (подробно — [инструкция](docs/database-rest.md)):
 
 ```
-make secrets && docker compose up -d && make seed
+make secrets && make up && make seed
 ```
 
 ## Работа со спецификацией

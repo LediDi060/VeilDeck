@@ -107,3 +107,6 @@ source_modules =
 forbidden_modules =
     app.api
     app.main
+ignore_imports =
+    app.catalog.router -> app.api.database
+    app.catalog.router -> app.api.catalog_limit

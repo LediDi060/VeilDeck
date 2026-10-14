@@ -16,6 +16,27 @@ concurrency:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: veildeck_test
+          POSTGRES_USER: app_owner
+          POSTGRES_PASSWORD: synthetic-ci-only
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U app_owner -d veildeck_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      TEST_DATABASE_OWNER_URL: postgresql+asyncpg://app_owner:synthetic-ci-only@localhost:5432/veildeck_test
+      TEST_APP_RW_PASSWORD: synthetic-ci-app-password-32-characters
+      TEST_REDIS_URL: redis://localhost:6379/15
     defaults:
       run:
         working-directory: backend
