@@ -3,9 +3,19 @@
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.core.exceptions import Conflict, DomainError, Forbidden, Gone, NotFound, RateLimited, Unauthorized
+from app.core.exceptions import (
+    Conflict,
+    DomainError,
+    Forbidden,
+    Gone,
+    NotFound,
+    RateLimited,
+    ServiceUnavailable,
+    Unauthorized,
+)
 from app.core.request_id import get_request_id
 
 HTTP_INTERNAL_ERROR = 500
@@ -17,6 +27,7 @@ STATUS_BY_ERROR: dict[type[DomainError], int] = {
     Conflict: 409,
     Gone: 410,
     RateLimited: 429,
+    ServiceUnavailable: 503,
 }
 
 
@@ -28,6 +39,10 @@ def error_response(status_code: int, code: str, message: str) -> JSONResponse:
 
 def register_error_handlers(app: FastAPI) -> None:
     """Подключает обработчики, скрывающие внутренние детали."""
+
+    @app.exception_handler(SQLAlchemyError)
+    async def _database_error(_: Request, __: SQLAlchemyError) -> JSONResponse:
+        return error_response(503, ServiceUnavailable.code, ServiceUnavailable.message)
 
     @app.exception_handler(DomainError)
     async def _domain_error(_: Request, exc: DomainError) -> JSONResponse:

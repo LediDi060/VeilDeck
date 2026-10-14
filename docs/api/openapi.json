@@ -1,6 +1,62 @@
 {
   "components": {
     "schemas": {
+      "CatalogPage": {
+        "additionalProperties": false,
+        "description": "Количество относится только к опубликованным карточкам.",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TeaserCard"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "page_size",
+          "total"
+        ],
+        "title": "CatalogPage",
+        "type": "object"
+      },
+      "DealType": {
+        "description": "Типы корпоративных возможностей.",
+        "enum": [
+          "equity",
+          "asset",
+          "partnership"
+        ],
+        "title": "DealType",
+        "type": "string"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
       "HealthResponse": {
         "additionalProperties": false,
         "description": "Ответ /healthz.",
@@ -15,6 +71,140 @@
         ],
         "title": "HealthResponse",
         "type": "object"
+      },
+      "Industry": {
+        "description": "Обобщённые отрасли.",
+        "enum": [
+          "manufacturing",
+          "logistics",
+          "technology",
+          "services"
+        ],
+        "title": "Industry",
+        "type": "string"
+      },
+      "RegionMacro": {
+        "description": "Макрорегионы без адреса или города.",
+        "enum": [
+          "europe",
+          "asia",
+          "middle_east",
+          "other"
+        ],
+        "title": "RegionMacro",
+        "type": "string"
+      },
+      "RevenueBand": {
+        "description": "Обобщённые диапазоны годовой выручки в EUR.",
+        "enum": [
+          "under_10m",
+          "10m_to_50m",
+          "50m_plus"
+        ],
+        "title": "RevenueBand",
+        "type": "string"
+      },
+      "SizeBand": {
+        "description": "Диапазоны численности сотрудников.",
+        "enum": [
+          "under_50",
+          "50_to_249",
+          "250_plus"
+        ],
+        "title": "SizeBand",
+        "type": "string"
+      },
+      "TeaserCard": {
+        "additionalProperties": false,
+        "description": "Allowlist публичных полей; закрытых данных нет даже в SQL-проекции (T-02).",
+        "properties": {
+          "deal_type": {
+            "$ref": "#/components/schemas/DealType"
+          },
+          "id": {
+            "format": "uuid4",
+            "title": "Id",
+            "type": "string"
+          },
+          "industry": {
+            "$ref": "#/components/schemas/Industry"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "region_macro": {
+            "$ref": "#/components/schemas/RegionMacro"
+          },
+          "revenue_band": {
+            "$ref": "#/components/schemas/RevenueBand"
+          },
+          "size_band": {
+            "$ref": "#/components/schemas/SizeBand"
+          },
+          "teaser_text": {
+            "title": "Teaser Text",
+            "type": "string"
+          },
+          "title_generic": {
+            "title": "Title Generic",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title_generic",
+          "industry",
+          "region_macro",
+          "size_band",
+          "revenue_band",
+          "deal_type",
+          "teaser_text",
+          "published_at"
+        ],
+        "title": "TeaserCard",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
       }
     }
   },
@@ -24,6 +214,155 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/cards": {
+      "get": {
+        "description": "Список опубликованных карточек: фильтры enum и не более 20 записей на страницу.",
+        "operationId": "listCatalogCards",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 100000,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 20,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "industry",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Industry"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Industry"
+            }
+          },
+          {
+            "in": "query",
+            "name": "region_macro",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/RegionMacro"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Region Macro"
+            }
+          },
+          {
+            "in": "query",
+            "name": "deal_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/DealType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Deal Type"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Cards",
+        "tags": [
+          "catalog"
+        ]
+      }
+    },
+    "/api/v1/cards/{card_id}": {
+      "get": {
+        "description": "Одинаковый 404 для неверного UUID, черновика, архива и отсутствующей карточки.",
+        "operationId": "getCatalogCard",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "card_id",
+            "required": true,
+            "schema": {
+              "title": "Card Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeaserCard"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Card",
+        "tags": [
+          "catalog"
+        ]
+      }
+    },
     "/healthz": {
       "get": {
         "description": "Возвращает признак живости процесса, без обращения к БД.",

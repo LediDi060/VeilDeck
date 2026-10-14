@@ -12,6 +12,13 @@ class DomainError(Exception):
         super().__init__(self.message)
 
 
+class ServiceUnavailable(DomainError):
+    """БД или лимитер недоступны; детали подключения не раскрываются."""
+
+    code = "service_unavailable"
+    message = "Сервис временно недоступен"
+
+
 class NotFound(DomainError):
     """Объекта нет ИЛИ он чужой: тело ответа одинаково (SR, T-03)."""
 

@@ -30,11 +30,28 @@ services:
       HMAC_KEY: ${HMAC_KEY}
       WM_KEY: ${WM_KEY}
     depends_on:
+      db-init:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
         condition: service_started
     networks: [edge, data]
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+
+  db-init:
+    build: ../backend
+    command: ["python", "-m", "scripts.bootstrap_db"]
+    environment:
+      MIGRATION_DATABASE_URL: postgresql+asyncpg://app_owner:${POSTGRES_PASSWORD}@postgres:5432/veildeck
+      APP_RW_PASSWORD: ${APP_RW_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [data]
     read_only: true
     tmpfs: [/tmp]
     cap_drop: [ALL]
